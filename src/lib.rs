@@ -129,3 +129,16 @@ pub fn parse_database(file: std::fs::File) -> DagType {
 
     dag
 }
+
+/// Process the given path: parse, cal and print stats
+pub fn process_file(path: &str) {
+    let file = std::fs::File::open(path)
+        .expect("Could not open file");
+
+    let dag = parse_database(file);
+
+    println!("AVG DAG DEPTH: {}", avg_depth(&dag));
+    println!("AVG TXS PER DEPTH: {}", avg_txs_depth(&dag));
+    println!("AVG REF: {}", avg_in_refs(&dag));
+    println!("TIPS: {}", total_tips(&dag));
+}
