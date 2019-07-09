@@ -22,6 +22,26 @@ fn good_database() {
 }
 
 #[test]
+fn not_bipartite() {
+    let file = std::fs::File::open("tests/good_database.txt")
+        .expect("Could not open file");
+
+    let dag = parse_database(file);
+
+    assert_ne!(true, is_bipartite(&dag));
+}
+
+#[test]
+fn bipartite() {
+    let file = std::fs::File::open("tests/bipartite.txt")
+        .expect("Could not open file");
+
+    let dag = parse_database(file);
+
+    assert_eq!(true, is_bipartite(&dag));
+}
+
+#[test]
 fn zero_nodes() {
     let file = std::fs::File::open("tests/zero_nodes.txt")
         .expect("Could not open file");

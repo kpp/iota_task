@@ -75,6 +75,48 @@ pub fn total_tips(dag: &DagType) -> usize {
     tips
 }
 
+pub fn is_bipartite(dag: &DagType) -> bool {
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    enum Color {
+        Red,
+        Blue,
+    }
+    impl Color {
+        fn toggle(&self) -> Color {
+            match self {
+                Color::Red => Color::Blue,
+                Color::Blue => Color::Red,
+            }
+        }
+    }
+
+    let mut colors: Vec<Option<Color>> = vec![None; dag.node_count()];
+    colors[0] = Some(Color::Blue); // set any color to the root node
+
+    let mut walker = Bfs::new(&dag, Index::new(0));
+    while let Some(parent) = walker.walk_next(&dag) {
+        let parent_color = colors[parent.index()].unwrap();
+        let next_color = parent_color.toggle();
+        let mut can_be_colored = true;
+        dag.children(parent).iter(&dag).for_each(|(_, child)| {
+            let ref mut child_color = colors[child.index()];
+            if let Some(child_color) = child_color {
+                if *child_color != next_color {
+                    can_be_colored = false; // there is already another color
+                }
+            } else {
+                // If there is no such color we assign a next one
+                *child_color = Some(next_color);
+            };
+        });
+        if !can_be_colored {
+            // Some of the nodes cannot be colored with two colors only
+            return false;
+        }
+    }
+    return true;
+}
+
 /// Parse the given file and return a correct Dag
 pub fn parse_database(file: std::fs::File) -> DagType {
     use std::io::BufRead;
@@ -141,4 +183,5 @@ pub fn process_file(path: &str) {
     println!("AVG TXS PER DEPTH: {}", avg_txs_depth(&dag));
     println!("AVG REF: {}", avg_in_refs(&dag));
     println!("TIPS: {}", total_tips(&dag));
+    println!("BIPARTITE: {}", is_bipartite(&dag));
 }
